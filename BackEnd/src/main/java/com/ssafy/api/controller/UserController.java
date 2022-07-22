@@ -1,17 +1,18 @@
 package com.ssafy.api.controller;
 
+import com.ssafy.api.request.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.ssafy.api.request.UserLoginPostReq;
-import com.ssafy.api.request.UserRegisterPostReq;
 import com.ssafy.api.response.UserLoginPostRes;
 import com.ssafy.api.response.UserRes;
 import com.ssafy.api.service.UserService;
@@ -26,7 +27,10 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import retrofit2.http.Path;
 import springfox.documentation.annotations.ApiIgnore;
+
+import javax.mail.internet.MimeMessage;
 
 /**
  * 유저 관련 API 요청 처리를 위한 컨트롤러 정의.
@@ -74,5 +78,162 @@ public class UserController {
 		User user = userService.getUserById(userId);
 		
 		return ResponseEntity.status(200).body(UserRes.of(user));
+	}
+
+	@PutMapping
+	@ApiOperation(value = "회원 본인 정보 수정", notes = "로그인한 회원 본인의 정보를 수정한다.")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "성공"),
+			@ApiResponse(code = 401, message = "인증 실패"),
+			@ApiResponse(code = 404, message = "사용자 없음"),
+			@ApiResponse(code = 500, message = "서버 오류")
+	})
+	public ResponseEntity<? extends BaseResponseBody> ModifyUserInfo(
+			@RequestBody @ApiParam(value="회원가입 정보", required = true) UserRegisterPostReq registerInfo) {
+
+		//임의로 리턴된 User 인스턴스. 현재 코드는 회원 가입 성공 여부만 판단하기 때문에 굳이 Insert 된 유저 정보를 응답하지 않음.
+		User user =userService.modifyUser(registerInfo);
+
+		return ResponseEntity.status(200).body(BaseResponseBody.of(200, "Success"));
+	}
+
+	@DeleteMapping
+	@ApiOperation(value = "회원 탈퇴", notes = "로그인한 회원 계정을 탈퇴시킨다.")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "성공"),
+			@ApiResponse(code = 401, message = "인증 실패"),
+			@ApiResponse(code = 404, message = "사용자 없음"),
+			@ApiResponse(code = 500, message = "서버 오류")
+	})
+	public ResponseEntity<? extends BaseResponseBody> deleteUser(
+			@RequestBody @ApiParam(value="회원가입 정보", required = true) UserRegisterPostReq registerInfo) {
+
+		boolean success = userService.deleteUser(registerInfo);
+
+		if(success){
+			return ResponseEntity.status(200).body(BaseResponseBody.of(200, "Success"));
+		}else{
+			return ResponseEntity.status(404).body(BaseResponseBody.of(404, "Fail"));
+		}
+
+	}
+
+	@PostMapping("/id")
+	@ApiOperation(value = "아이디 찾기", notes = "<strong>이름과 전화번호</strong>를 통해 회원가입 한다.")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "성공"),
+			@ApiResponse(code = 401, message = "인증 실패"),
+			@ApiResponse(code = 404, message = "사용자 없음"),
+			@ApiResponse(code = 500, message = "서버 오류")
+	})
+	public ResponseEntity<? extends BaseResponseBody> register(
+			@RequestBody @ApiParam(value="회원가입 정보", required = true)UserNamePhoneReq userNamePhoneReq) {
+
+		//임의로 리턴된 User 인스턴스. 현재 코드는 회원 가입 성공 여부만 판단하기 때문에 굳이 Insert 된 유저 정보를 응답하지 않음.
+		User user = userService.getUserByNameAndPhone(userNamePhoneReq.getName(), userNamePhoneReq.getPhone());
+		if(user != null){
+			String id = user.getId();
+			return ResponseEntity.status(200).body(BaseResponseBody.of(200, id));
+		}else{
+			return ResponseEntity.status(200).body(BaseResponseBody.of(200, "Fail"));
+		}
+	}
+
+	@GetMapping("/idcheck/{user_id}")
+	@ApiOperation(value = "회원 아이디 중복 체크", notes = "회원가입 시 회원 아이디 중복 체크 검사")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "성공"),
+			@ApiResponse(code = 401, message = "인증 실패"),
+			@ApiResponse(code = 404, message = "사용자 없음"),
+			@ApiResponse(code = 500, message = "서버 오류")
+	})
+	public ResponseEntity<? extends BaseResponseBody> idCheck(@PathVariable("user_id") String userId){
+
+		boolean temp = userService.checkUserId(userId);
+
+		if(temp == true){
+			return ResponseEntity.status(200).body(BaseResponseBody.of(200, "Success"));
+		}else {
+
+			return ResponseEntity.status(401).body(BaseResponseBody.of(401, "fail"));
+		}
+	}
+
+	@GetMapping("/emailcheck/{email}")
+	@ApiOperation(value = "회원 이메일 중복 체크", notes = "회원가입 시 회원 이메일 중복 체크 검사")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "성공"),
+			@ApiResponse(code = 401, message = "인증 실패"),
+			@ApiResponse(code = 404, message = "사용자 없음"),
+			@ApiResponse(code = 500, message = "서버 오류")
+	})
+	public ResponseEntity<? extends BaseResponseBody> emailCheck(@PathVariable("email") String email){
+
+		boolean temp = userService.checkUserEmail(email);
+
+		if(temp == true){
+			return ResponseEntity.status(200).body(BaseResponseBody.of(200, "Success"));
+		}else {
+
+			return ResponseEntity.status(401).body(BaseResponseBody.of(401, "fail"));
+		}
+	}
+
+	@Autowired
+	JavaMailSender mailSender;
+
+	@Value("${spring.mail.username}")
+	String sendFrom;
+
+	@Autowired
+	Environment env;
+
+	@PostMapping("/email")
+	@ApiOperation(value = "임시 비밀번호 발송", notes = "임시 비밀번호를 발송한다.")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "성공"),
+			@ApiResponse(code = 500, message = "서버 오류")
+	})
+	public ResponseEntity<? extends BaseResponseBody> sendPasswordMail(
+			@RequestBody @ApiParam(value="아이디, 이메일 정보", required = true) UserIdEmailReq user) {
+		boolean success = userService.sendPasswordMail(user);
+		if(success){
+			return ResponseEntity.status(200).body(BaseResponseBody.of(200, "Success"));
+		}else{
+			return ResponseEntity.status(500).body(BaseResponseBody.of(500, "Fail"));
+		}
+	}
+
+	@PostMapping("/vemail")
+	@ApiOperation(value = "이메일 인증 메일 발송", notes = "인증 코드를 발송한다.")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "성공"),
+			@ApiResponse(code = 500, message = "서버 오류")
+	})
+	public ResponseEntity<? extends BaseResponseBody> sendVerificationMail(
+			@RequestBody @ApiParam(value="아이디, 이메일 정보", required = true) UserIdEmailReq user) {
+		boolean success = userService.sendVerificationMail(user);
+		if(success){
+			return ResponseEntity.status(200).body(BaseResponseBody.of(200, "Success"));
+		}else{
+			return ResponseEntity.status(500).body(BaseResponseBody.of(500, "Fail"));
+		}
+	}
+
+	@PostMapping("/vemail/code")
+	@ApiOperation(value = "이메일 인증 코드 조회", notes = "인증 코드를 조회한다.")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "성공"),
+			@ApiResponse(code = 500, message = "서버 오류")
+	})
+	public ResponseEntity<? extends BaseResponseBody> sendVerificationCode(
+			@RequestBody @ApiParam(value="아이디, 이메일 정보", required = true) UserEmailCodeReq user) {
+		String verificationCode = userService.sendVerificationCode(user);
+
+		if(verificationCode.equals(user.getCode())){
+			return ResponseEntity.status(200).body(BaseResponseBody.of(200, verificationCode));
+		}else{
+			return ResponseEntity.status(500).body(BaseResponseBody.of(500, verificationCode));
+		}
 	}
 }

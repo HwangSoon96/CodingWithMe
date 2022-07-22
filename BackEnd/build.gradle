@@ -28,6 +28,8 @@ plugins {
     id 'java'
     id 'idea'
     id 'org.springframework.boot' version "${springBootVer}"
+//    id 'com.ewerk.gradle.plugins.querydsl' version '1.0.10'
+
 }
 
 apply plugin: 'io.spring.dependency-management'
@@ -97,8 +99,7 @@ processResources {
         }
     }
 }
-
-////이클립스인 경우를 위한 QueryDSL 설정. IntelliJ는 불필요. [시작]
+//이클립스인 경우를 위한 QueryDSL 설정. IntelliJ는 불필요. [시작]
 //def querydslDir = 'src/main/generated'
 //querydsl {
 //    library = "com.querydsl:querydsl-apt"
@@ -135,6 +136,7 @@ dependencies {
     runtimeOnly("mysql:mysql-connector-java")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.8.0'
 
     implementation('commons-io:commons-io:2.6')
     implementation("org.apache.commons:commons-collections4:4.4")
@@ -142,6 +144,7 @@ dependencies {
 
     implementation("com.querydsl:querydsl-jpa:${querydslVer}")
     implementation("com.querydsl:querydsl-apt:${querydslVer}")
+    implementation ("org.springframework.boot:spring-boot-starter-mail")
 /*
     //STOMP 웹소캣 서버 사이드 테스트를 위한 의존성 추가
     implementation("org.springframework.boot:spring-boot-starter-mustache")

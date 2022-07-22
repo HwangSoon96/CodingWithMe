@@ -31,4 +31,27 @@ public class UserRepositorySupport {
         if(user == null) return Optional.empty();
         return Optional.ofNullable(user);
     }
+
+//    public Optional<User> findUserByUserIdAndPhone(String id, String phone) {
+//        User user = jpaQueryFactory.select(qUser).from(qUser)
+//                .where(qUser.id.eq(id))
+//                .where(qUser.phone.eq(phone))
+//                .fetchOne();
+//        if(user == null) return Optional.empty();
+//        return Optional.ofNullable(user);
+//    }
+
+    public boolean findByUserIdEquals(String id) {
+        User user = jpaQueryFactory.select(qUser).from(qUser)
+                .where(qUser.id.eq(id)).fetchOne();
+        if(user == null) return true;
+        return false;
+    }
+
+    public boolean findByUserEmailEquals(String email) {
+        User user = jpaQueryFactory.select(qUser).from(qUser)
+                .where(qUser.email.eq(email)).fetchOne();
+        if(user == null) return true;
+        return false;
+    }
 }
