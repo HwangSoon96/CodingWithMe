@@ -17,9 +17,6 @@ export default {
 	setup(props){
 		const videoStream = ref(null);
 		onMounted(() => {
-			console.log(props);
-			console.log(props.streamManager);
-			console.log(videoStream);
 			props.streamManager.addVideoElement(videoStream);
 		});
 
