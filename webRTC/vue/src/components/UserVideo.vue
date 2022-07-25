@@ -6,7 +6,7 @@
 </template>
 
 <script>
-
+import {computed, onMounted, onUpdated, ref} from 'vue';
 export default {
 	name: 'UserVideo',
 
@@ -14,25 +14,36 @@ export default {
 		streamManager: Object,
 	},
 
-	computed: {
-		clientData () {
-			const { clientData } = this.getConnectionData();
-			return clientData;
-		},
-	},
+	setup(props){
+		const videoStream = ref(null);
+		onMounted(() => {
+			console.log(props);
+			console.log(props.streamManager);
+			console.log(videoStream);
+			props.streamManager.addVideoElement(videoStream);
+		});
 
-	methods: {
-		getConnectionData () {
-			const { connection } = this.streamManager.stream;
+		onUpdated(() => {
+			props.streamManager.addVideoElement(videoStream);
+		});
+
+
+		const getConnectionData = () => {
+			const { connection } = props.streamManager.stream;
 			return JSON.parse(connection.data);
-		},
-	},
-	
-	mounted : function () {
-		this.streamManager.addVideoElement(this.$refs.videoStream);
-	},
-	updated : function () {
-		this.streamManager.addVideoElement(this.$refs.videoStream);
+		};
+
+		const clientData = computed(()=>{
+			const { clientData } = getConnectionData();
+			return clientData;
+		});
+
+		return {
+			getConnectionData,
+			clientData,
+			videoStream
+		};
+
 	}
 };
 </script>

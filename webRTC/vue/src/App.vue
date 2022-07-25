@@ -1,17 +1,17 @@
 <template>
 	<div id="main-container" class="container">
-		<div id="join" v-if="!session">
+		<div id="join" v-if="state.session === undefined">
 			<div id="img-div"><img src="resources/images/openvidu_grey_bg_transp_cropped.png" /></div>
 			<div id="join-dialog" class="jumbotron vertical-center">
 				<h1>Join a video session</h1>
 				<div class="form-group">
 					<p>
 						<label>Participant</label>
-						<input v-model="myUserName" class="form-control" type="text" required>
+						<input v-model="state.myUserName" class="form-control" type="text" required>
 					</p>
 					<p>
 						<label>Session</label>
-						<input v-model="mySessionId" class="form-control" type="text" required>
+						<input v-model="state.mySessionId" class="form-control" type="text" required>
 					</p>
 					<p class="text-center">
 						<button class="btn btn-lg btn-success" @click="joinSession()">Join!</button>
@@ -20,22 +20,23 @@
 			</div>
 		</div>
 		
-		<div id="session" v-if="session">
+		<div id="session" v-if="state.session !== undefined">
 			<div id="session-header">
-				<h1 id="session-title">{{ mySessionId }}</h1>
+				<h1 id="session-title">{{ state.mySessionId }}</h1>
 				<input class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="leaveSession" value="Leave session">
 			</div>
 
 			<div id="session-header-screenShare">
-				<input v-if = "!screenOV" class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="startScreenShare" value="Start Screen Share">
-				<input v-if =  "screenOV" class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="stopScreenShare" value="End Screen Share">
+				<input v-if = "!state.screenOV" class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="startScreenShare" value="Start Screen Share">
+				<input v-if =  "state.screenOV" class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="stopScreenShare" value="End Screen Share">
 			</div>
 			<div id="main-video" class="col-md-6">
-				<user-video :stream-manager="mainStreamManager"/>
+				<user-video v-if="state.mainStreamManager" :stream-manager="state.mainStreamManager"/>
 			</div>
 			<div id="video-container" class="col-md-6">
-				<user-video v-for="sub in subscribers" :key="sub.stream.connection.connectionId" :stream-manager="sub" @click="updateMainVideoStreamManager(sub)"/>
-				<user-video :stream-manager="publisher" @click="updateMainVideoStreamManager(publisher)"/>
+				<div v-for="sub in state.subscribers" :key="sub.stream.connection.connectionId">{{ sub }}</div>
+				<user-video v-for="sub in state.subscribers" :key="sub.stream.connection.connectionId" :stream-manager="sub" @click="updateMainVideoStreamManager(sub)"/>
+				<user-video v-if="state.publisher" :stream-manager="state.publisher" @click="updateMainVideoStreamManager(state.publisher)"/>
 			</div>
 
 			<div id="screenShare-container" class="col-md-6">
@@ -49,6 +50,7 @@
 import axios from 'axios';
 import { OpenVidu } from 'openvidu-browser';
 import UserVideo from './components/UserVideo';
+import {reactive, ref, computed, onUpdated} from 'vue';
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 
@@ -62,72 +64,80 @@ export default {
 		UserVideo,
 	},
 
-	data () {
-		return {
+	setup() {
+		const state = reactive({
 			OV: undefined,
 			session: undefined,
 			mainStreamManager: undefined,
 			publisher: undefined,
 			subscribers: [],
 
-			mySessionId: 'SessionA',
-			myUserName: 'Participant' + Math.floor(Math.random() * 100),
-
+			mySessionId: ref('SessionA'),
+			myUserName: ref('Participant' + Math.floor(Math.random() * 100)),
 
 			// 화면 공유할 때 사용할 session
 			screenOV: undefined,
 			screenSession: undefined,
-		}
-	},
+			screenShareName : computed(()=>{
+				return state.myUserName + "'s Screen";
+			})
+        });
 
-	computed:{
-		screenShareName : function(){
-			return this.myUserName + "'s Screen"
-		}
-	},
-	methods: {
-		joinSession () {
+		const leaveSession = () => {
+			// --- Leave the session by calling 'disconnect' method over the Session object ---
+			if (state.session) state.session.disconnect();
+			if (state.screenSession) state.screenSession.disconnect();
+			state.session = undefined;
+			state.screenSession = undefined;
+			state.mainStreamManager = undefined;
+			state.publisher = undefined;
+			state.subscribers = [];
+			state.OV = undefined;
+			state.screenOV = undefined;
+
+			window.removeEventListener('beforeunload', leaveSession);
+		};
+
+		const joinSession = () => {
 			// --- Get an OpenVidu object ---
-			this.OV = new OpenVidu();
+			state.OV = new OpenVidu();
 
 			// --- Init a session ---
-			this.session = this.OV.initSession();
+			state.session = state.OV.initSession();
 
 			// --- Specify the actions when events take place in the session ---
 
 			// On every new Stream received...
-			this.session.on('streamCreated', ({ stream }) => {
+			state.session.on('streamCreated', ({ stream }) => {
 				// stream.typeOfVideo == "SCREEN"
-				const subscriber = this.session.subscribe(stream);
-				this.subscribers.push(subscriber);
+				const subscriber = state.session.subscribe(stream);
+				state.subscribers.push(subscriber);
 			});
 
 			// On every Stream destroyed...
-			this.session.on('streamDestroyed', ({ stream }) => {
-				const index = this.subscribers.indexOf(stream.streamManager, 0);
+			state.session.on('streamDestroyed', ({ stream }) => {
+				const index = state.subscribers.indexOf(stream.streamManager, 0);
 				if (index >= 0) {
-					this.subscribers.splice(index, 1);
+					state.subscribers.splice(index, 1);
 				}
 			});
 
 			// On every asynchronous exception...
-			this.session.on('exception', ({ exception }) => {
-				console.warn(exception);
+			state.session.on('exception', ({ exception }) => {
+				console.error(exception);
 			});
 
 			// --- Connect to the session with a valid user token ---
 
 			// 'getToken' method is simulating what your server-side should do.
 			// 'token' parameter should be retrieved and returned by your own backend
-			this.getToken(this.mySessionId).then(token => {
+			getToken(state.mySessionId).then(token => {
 				console.log(token);
-				this.session.connect(token, { clientData: this.myUserName })
+				state.session.connect(token, { clientData: state.myUserName })
 					.then(() => {
-						
-						this.OV.getDevices().then(() =>{
-								// let videoDevices = devices.filter(device => device.kind === 'videoinput');
-
-								let publisher = this.OV.initPublisher(undefined, {
+						state.OV.getDevices().then(() =>{
+							// let videoDevices = devices.filter(device => device.kind === 'videoinput');
+							let publisher = state.OV.initPublisher(undefined, {
 								audioSource: undefined, // The source of audio. If undefined default microphone
 								videoSource: undefined, // The source of video. If undefined default webcam
 								publishAudio: true,  	// Whether you want to start publishing with your audio unmuted or not
@@ -138,28 +148,30 @@ export default {
 								mirror: false       	// Whether to mirror your local video or not
 							});
 
-							this.mainStreamManager = publisher;
-							this.publisher = publisher;
+							state.mainStreamManager = publisher;
+							state.publisher = publisher;
 
 							// --- Publish your stream ---
-
-							this.session.publish(this.publisher);
+							state.session.publish(state.publisher);
 						})
 					})
 					.catch(error => {
 						console.log('There was an error connecting to the session:', error.code, error.message);
 					});
 			});
-			window.addEventListener('beforeunload', this.leaveSession);
-		},
+			window.addEventListener('beforeunload', leaveSession);
+		};
 
-		startScreenShare(){
-			this.screenOV = new OpenVidu();
-			this.screenSession = this.screenOV.initSession();
+		onUpdated(() => {
+			console.log("updated");
+		});
+		const startScreenShare = () => {
+			state.screenOV = new OpenVidu();
+			state.screenSession = state.screenOV.initSession();
 
-			this.getToken(this.mySessionId).then(token =>{
-				this.screenSession.connect(token, { clientData: this.screenShareName }).then(()=>{
-						let publisher = this.screenOV.initPublisher("html-element-id", { videoSource: "screen", publishAudio: false  });
+			state.getToken(state.mySessionId).then(token =>{
+				state.screenSession.connect(token, { clientData: state.screenShareName }).then(()=>{
+						let publisher = state.screenOV.initPublisher("html-element-id", { videoSource: "screen", publishAudio: false  });
 
 						try {
 							publisher.once('accessAllowed', () => {
@@ -167,14 +179,14 @@ export default {
 							console.log(test);
 							publisher.stream.getMediaStream().getVideoTracks()[0].addEventListener('ended', () => {
 								console.log('User pressed the "Stop sharing" button');
-								this.stopScreenShare();
+								state.stopScreenShare();
 							});
-								this.screenSession.publish(publisher);
+								state.screenSession.publish(publisher);
 							});
 
 							publisher.once('accessDenied', (event) => {
 								console.error(event, 'ScreenShare: Access Denied');
-								this.stopScreenShare();
+								this.states.stopScreenShare();
 							});
 						} catch (error) {
 							console.log(error);
@@ -183,35 +195,22 @@ export default {
 				})
 			}).catch(error => {
 				console.error(error);
-				this.screenOV = undefined;
-				this.screenSession = undefined;
+				state.screenOV = undefined;
+				state.screenSession = undefined;
 			})
-		},
+		};
 
-		stopScreenShare(){
-			this.screenSession.disconnect();
-			this.screenOV = undefined;
-			this.screenSession = undefined;
-		},
-		leaveSession () {
-			// --- Leave the session by calling 'disconnect' method over the Session object ---
-			if (this.session) this.session.disconnect();
-			if (this.screenSession) this.screenSession.disconnect();
-			this.session = undefined;
-			this.screenSession = undefined;
-			this.mainStreamManager = undefined;
-			this.publisher = undefined;
-			this.subscribers = [];
-			this.OV = undefined;
-			this.screenOV = undefined;
+		const stopScreenShare = () => {
+			state.screenSession.disconnect();
+			state.screenOV = undefined;
+			state.screenSession = undefined;
+		};
 
-			window.removeEventListener('beforeunload', this.leaveSession);
-		},
-
-		updateMainVideoStreamManager (stream) {
-			if (this.mainStreamManager === stream) return;
-			this.mainStreamManager = stream;
-		},
+		const updateMainVideoStreamManager = (stream) => {
+			if (state.mainStreamManager === stream) 
+				return;
+			state.mainStreamManager = stream;
+		}
 
 		/**
 		 * --------------------------
@@ -224,13 +223,11 @@ export default {
 		 *   2) Create a Connection in OpenVidu Server (POST /openvidu/api/sessions/<SESSION_ID>/connection)
 		 *   3) The Connection.token must be consumed in Session.connect() method
 		 */
+		const getToken = (mySessionId) => {
+			return createSession(mySessionId).then(sessionId => createToken(sessionId));
+		};
 
-		getToken (mySessionId) {
-			return this.createSession(mySessionId).then(sessionId => this.createToken(sessionId));
-		},
-
-		// See https://docs.openvidu.io/en/stable/reference-docs/REST-API/#post-session
-		createSession (sessionId) {
+		const createSession = (sessionId) => {
 			return new Promise((resolve, reject) => {
 				axios
 					.post(`${OPENVIDU_SERVER_URL}/openvidu/api/sessions`, JSON.stringify({
@@ -255,10 +252,10 @@ export default {
 						}
 					});
 			});
-		},
+		};
 
 		// See https://docs.openvidu.io/en/stable/reference-docs/REST-API/#post-connection
-		createToken (sessionId) {
+		const createToken = (sessionId) => {
 			return new Promise((resolve, reject) => {
 				axios
 					.post(`${OPENVIDU_SERVER_URL}/openvidu/api/sessions/${sessionId}/connection`, {}, {
@@ -271,7 +268,19 @@ export default {
 					.then(data => resolve(data.token))
 					.catch(error => reject(error.response));
 			});
-		},
-	}
+		};
+
+		return {
+			state,
+			joinSession,
+			leaveSession,
+			startScreenShare,
+			stopScreenShare,
+			updateMainVideoStreamManager,
+			getToken,
+			createSession,
+			createToken
+		}
+	},
 }
 </script>
