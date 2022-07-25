@@ -31,11 +31,11 @@
 				<input v-if =  "screenOV" class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="stopScreenShare" value="End Screen Share">
 			</div>
 			<div id="main-video" class="col-md-6">
-				<user-video :stream-manager="mainStreamManager"/>
+				<user-video v-if="mainStreamManager" :stream-manager="mainStreamManager"/>
 			</div>
 			<div id="video-container" class="col-md-6">
 				<user-video v-for="sub in subscribers" :key="sub.stream.connection.connectionId" :stream-manager="sub" @click="updateMainVideoStreamManager(sub)"/>
-				<user-video :stream-manager="publisher" @click="updateMainVideoStreamManager(publisher)"/>
+				<user-video v-if="publisher" :stream-manager="publisher" @click="updateMainVideoStreamManager(publisher)"/>
 			</div>
 
 			<div id="screenShare-container" class="col-md-6">
