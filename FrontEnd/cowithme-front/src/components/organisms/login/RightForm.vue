@@ -1,11 +1,15 @@
 <template>
 	<div class="right">
-		<LoginText></LoginText>
-		<IDInput></IDInput>
-		<PWInput></PWInput>
-		<FindIDPW></FindIDPW>
-		<LoginButton></LoginButton>
-		<SelectRoleButton></SelectRoleButton>
+		<div class="container">
+			<LoginText class="component"></LoginText>
+			<div class="form-container">
+				<IDInput class="component"></IDInput>
+				<PWInput class="component"></PWInput>
+			</div>
+			<FindIDPW class="find"></FindIDPW>
+			<LoginButton class="login-button"></LoginButton>
+			<SelectRoleButton class="role-button"></SelectRoleButton>
+		</div>
 	</div>
 </template>
 
@@ -38,5 +42,31 @@ export default {
 	height: 800px;
 	width: 500px;
 	background-color: white;
+}
+
+.container {
+	margin-top: 100px;
+	margin-left: 50px;
+}
+
+.form-container {
+	margin-top: 50px;
+	margin-right: 50px;
+}
+
+.component {
+	margin-bottom: 20px;
+}
+
+.find {
+	margin-top: 20px;
+}
+
+.login-button {
+	margin-top: 50px;
+}
+
+.role-button {
+	margin-top: 30px;
 }
 </style>

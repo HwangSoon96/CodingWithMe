@@ -1,25 +1,36 @@
 <template>
-	<div class="container base row">
-		<div class="col">
-			<AtomLogo></AtomLogo>
+	<div class="container base">
+		<AtomLogo class="atom-logo"></AtomLogo>
+		<div class="form-container">
+			<RegisterText class="register-text"></RegisterText>
+			<div class="container flex row">
+				<div class="left-container col">
+					<NameInput class="component"></NameInput>
+					<div class="flex row">
+						<IDInput class="component col-9"></IDInput>
+						<div class="col-1"></div>
+						<IDChkButton class="component col-2"></IDChkButton>
+					</div>
+					<PWInput class="component"></PWInput>
+					<PWConfirmInput class="component"></PWConfirmInput>
+				</div>
+				<div class="right-container col">
+					<div class="flex row">
+						<EmailInput class="component col-9"></EmailInput>
+						<div class="col-1"></div>
+						<EmailChkButton
+							@click="chkEmail"
+							class="component col-2"
+						></EmailChkButton>
+					</div>
+					<PhoneInput class="component"></PhoneInput>
+					<NicknameInput class="component"></NicknameInput>
+					<BirthInput class="component"></BirthInput>
+				</div>
+			</div>
 		</div>
-		<div class="col">
-			<RegisterText></RegisterText>
-			<NameInput></NameInput>
-			<IDInput></IDInput>
-			<IDChkButton></IDChkButton>
-			<PWInput></PWInput>
-			<PWConfirmInput></PWConfirmInput>
-		</div>
-		<div class="col">
-			<EmailInput></EmailInput>
-			<EmailChkButton @click="chkEmail"></EmailChkButton>
-			<PhoneInput></PhoneInput>
-			<NicknameInput></NicknameInput>
-			<BirthInput></BirthInput>
-		</div>
-		<AtomRadio></AtomRadio>
-		<RegisterButton></RegisterButton>
+		<AtomRadio class="bottom"></AtomRadio>
+		<RegisterButton class="bottom"></RegisterButton>
 	</div>
 </template>
 
@@ -39,6 +50,7 @@ import IDChkButton from 'src/components/molecules/signup/IDChkButton.vue';
 import EmailChkButton from 'src/components/molecules/signup/EmailChkButton.vue';
 import AtomLogo from 'src/components/atoms/AtomLogo.vue';
 import { useQuasar } from 'quasar';
+
 export default {
 	name: 'BaseSquare',
 	components: {
@@ -77,12 +89,43 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.container {
+.base {
 	height: 800px;
 	width: 1200px;
 	background-color: #303841;
 	box-shadow: 0px 0px 20px #303841;
 	border-radius: 20px;
 	display: flex;
+	flex-direction: column;
+	padding: 20px;
+}
+.atom-logo {
+	width: 20%;
+}
+
+.register-text {
+	font-size: 2.5rem;
+}
+
+.bottom {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.form-container {
+	padding: 0 50px 50px 50px;
+}
+
+.left-container {
+	margin-right: 20px;
+}
+
+.right-container {
+	margin-left: 20px;
+}
+
+.component {
+	margin-bottom: 20px;
 }
 </style>

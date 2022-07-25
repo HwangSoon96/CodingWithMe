@@ -1,26 +1,25 @@
 <template>
-	<!-- <LoginPage></LoginPage> -->
 	<div>
-		<SelectRoleButton></SelectRoleButton>
-		<IDIput></IDIput>
-		<PWInput></PWInput>
-		<LoginButton></LoginButton>
-		<AtomLogo></AtomLogo>
+		<ClassInfo></ClassInfo>
+		<div class="row">
+			<CalendarInfo></CalendarInfo>
+			<div class="col-8">
+				<LectureTimeHistory></LectureTimeHistory>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script>
 import { defineComponent } from 'vue';
-// import LoginPage from './LoginPage.vue';
-import SelectRoleButton from 'src/components/molecules/login/SelectRoleButton.vue';
-import IDIput from 'src/components/molecules/login/IDIput.vue';
-import PWInput from 'src/components/molecules/login/PWInput.vue';
-import LoginButton from 'src/components/molecules/login/LoginButton.vue';
-import AtomLogo from 'src/components/atoms/AtomLogo.vue';
+import CalendarInfo from 'src/components/organisms/home/CalendarInfo.vue';
+import ClassInfo from 'src/components/organisms/home/ClassInfo.vue';
+import LectureTimeHistory from 'src/components/organisms/home/LectureTimeHistory.vue';
+// import AtomLogo from 'src/components/atoms/AtomLogo.vue';
 
 export default defineComponent({
 	name: 'IndexPage',
-	components: { SelectRoleButton, IDIput, PWInput, LoginButton, AtomLogo },
+	components: { CalendarInfo, ClassInfo, LectureTimeHistory },
 });
 </script>
 

@@ -1,10 +1,9 @@
 <template>
-	<div></div>
+	<q-img src="src/assets/logo/logo2.svg"></q-img>
 </template>
 
 <script>
 export default {
-	name: 'StudentHomePage',
 	setup() {
 		return {};
 	},

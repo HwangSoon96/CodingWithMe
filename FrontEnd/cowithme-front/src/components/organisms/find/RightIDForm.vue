@@ -1,9 +1,13 @@
 <template>
 	<div class="right">
-		<FindIDPWText></FindIDPWText>
-		<NameInput></NameInput>
-		<BirthInput></BirthInput>
-		<FindButton></FindButton>
+		<div class="container">
+			<FindIDPWText></FindIDPWText>
+			<div class="form-container">
+				<NameInput class="component"></NameInput>
+				<BirthInput class="component"></BirthInput>
+			</div>
+			<FindButton class="find"></FindButton>
+		</div>
 	</div>
 </template>
 
@@ -26,5 +30,23 @@ export default {
 	height: 800px;
 	width: 500px;
 	background-color: white;
+}
+
+.container {
+	margin-top: 100px;
+	margin-left: 50px;
+}
+
+.form-container {
+	margin-top: 50px;
+	margin-right: 100px;
+}
+
+.component {
+	margin-bottom: 20px;
+}
+
+.find {
+	margin-top: 20px;
 }
 </style>

@@ -1,10 +1,10 @@
 <template>
-	<div></div>
+	<p>개나리반</p>
 </template>
 
 <script>
 export default {
-	name: 'StudentHomePage',
+	name: 'ClassText',
 	setup() {
 		return {};
 	},

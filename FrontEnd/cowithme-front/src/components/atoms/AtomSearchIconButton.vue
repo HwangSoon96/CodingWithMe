@@ -1,6 +1,13 @@
 <template>
-	<div class="q-pa-md q-gutter-sm">
-		<q-btn label="검색 아이콘 버튼" icon="search"></q-btn>
+	<div class="q-py-xs q-gutter-sm">
+		<q-btn
+			size="24px"
+			class="btn-size"
+			align="left"
+			flat
+			label="스터디 검색"
+			icon="search"
+		></q-btn>
 	</div>
 </template>
 
@@ -13,4 +20,8 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style>
+.btn-size {
+	width: 299px;
+}
+</style>
