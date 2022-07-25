@@ -29,9 +29,11 @@ export default {
 	},
 	
 	mounted : function () {
+		console.log(this.$refs.videoStream);
 		this.streamManager.addVideoElement(this.$refs.videoStream);
 	},
 	updated : function () {
+		console.log(this.$refs.videoStream);
 		this.streamManager.addVideoElement(this.$refs.videoStream);
 	}
 };
