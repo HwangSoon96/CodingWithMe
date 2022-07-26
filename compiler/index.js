@@ -30,9 +30,7 @@ app.post("/exec", async (req,res) => {
     })
 
   }catch(error){
-    console.log(`
-    ${new Date().getDaynew} ${Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}
-     - ${error}`);
+    console.log(error);
     res.send({
       status : "invalid request",
       result : []
