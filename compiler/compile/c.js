@@ -9,12 +9,15 @@ exports.check = async (code,inputData,answerData) => {
   let answerFile;
   try {
     sourceFile = await fs.writeFile('main.c',code);
-    await fs.writeFile('input.in', inputData);
-    await fs.writeFile('output.out', answerData);
+    await fs.writeFile('./input.in', inputData);
+    await fs.writeFile('./output.out', answerData);
 
-    inputFile = await fs.readFile('input.in','utf-8');
-    answerFile = await fs.readFile('output.out','utf-8');
+    inputFile = await fs.readFile('./input.in','utf-8');
+    answerFile = await fs.readFile('./output.out','utf-8');
   } catch (error) {
+    console.log(`
+    ${new Date().getDaynew} ${Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}
+     - ${error}`);
     return {
       time : 0,
       output : error.stderr,
@@ -31,7 +34,11 @@ exports.check = async (code,inputData,answerData) => {
     try {
       await fs.unlink('main.c');
       await fs.unlink('main.out');
-    } catch (error) { }
+    } catch (error) { 
+      console.log(`
+    ${new Date().getDaynew} ${Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}
+     - ${error}`);
+    }
 
     return {
       time : cur_time - pre_time,
@@ -40,11 +47,19 @@ exports.check = async (code,inputData,answerData) => {
     };
 
   } catch (error) {
-    
+    console.log(`
+    ${new Date().getDaynew} ${Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}
+     - ${error}`);
     try {
       await fs.unlink('main.c');
       await fs.unlink('main.out');
-    } catch (error) { }
+      await fs.unlink('input.out');
+      await fs.unlink('output.out');
+    } catch (error) {
+      console.log(`
+    ${new Date().getDaynew} ${Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}
+     - ${error}`);
+     }
 
     return {
       time : 0,
