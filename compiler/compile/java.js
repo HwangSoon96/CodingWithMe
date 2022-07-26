@@ -18,7 +18,7 @@ exports.check = async (code,inputData,answerData) => {
   }
 
   try {
-    await exec("javac -d . -encoding UTF-8 -g:none -Xlint:deprecation Main.java");
+    await exec("javac -d . -encoding UTF-8 -g:lines -g:vars -g:source -Xlint:deprecation Main.java");
     let pre_time = Date.now();
     let run = await exec(`java -cp . Main < ./input.in`);
     let cur_time = Date.now();

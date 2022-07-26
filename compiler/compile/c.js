@@ -18,7 +18,7 @@ exports.check = async (code,inputData,answerData) => {
   }
 
   try {
-    await exec("gcc main.c");
+    await exec("gcc -finput-charset=UTF-8 main.c");
     let pre_time = Date.now();
     let run = await exec(`./a.out < ./input.in`);
     let cur_time = Date.now();
