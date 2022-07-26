@@ -17,37 +17,35 @@
 				</div>
 		</div>
 		
-		<div id="session" v-if="state.session !== undefined">
-      <div id="session-header">
+	<div id="session" v-if="state.session !== undefined">
+			<div id="session-header">
 				<h1 id="session-title">{{ state.mySessionId }}</h1>
 				<input class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="leaveSession" value="Leave session">
 			</div>
-		</div>
+			<div id="main-video" class="col-md-6">
+			<!-- <div v-if="state.mainStreamManager"> {{ state.mainStreamManager }} </div> -->
+			</div>
 
-    <div id="main-video" class="col-md-6">
-      <!-- <div v-if="state.mainStreamManager"> {{ state.mainStreamManager }} </div> -->
+		<div v-if="state.mainStreamManager">
+			teststesfsefsefsefse
+		<user-video v-if="state.mainStreamManager" :stream-manager="state.mainStreamManager"/>
 		</div>
-    <div v-if="mainStreamManager">
-      teststesfsefsefsefse
-    </div>
-    <user-video v-if="mainStreamManager" :stream-manager="mainStreamManager"/>
-    <div id="video-container" class="col-md-6">
-      <div v-for="sub in state.subscribers" :key="sub.stream.connection.connectionId" >
-        {{ sub }}
-      </div>
-			<div v-if="state.publisher">
-        <!-- {{ state.publisher }} -->
-      </div>
+		
+		<div id="video-container" class="col-md-6">
+			<div v-for="sub in state.subscribers" :key="sub.stream.connection.connectionId" >
+				{{ sub }}
+			</div>
 		</div>
-    
 	</div>
+    
+  </div>
 </template>
 
 <script>
 
 import axios from 'axios';
 import { OpenVidu } from 'openvidu-browser';
-import {reactive, ref, computed} from 'vue';
+import { reactive, ref, computed, onUpdated } from 'vue';
 import UserVideo from './components/UserVideo.vue';
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
@@ -55,7 +53,7 @@ const OPENVIDU_SERVER_URL = "https://" + "localhost:4443";
 const OPENVIDU_SERVER_SECRET = "MY_SECRET";
 
 export default {
-  name: 'IndexPage',
+  name: 'App',
 
   components: {
       UserVideo,
@@ -80,26 +78,29 @@ export default {
     });
 
     const joinSession = () => {
-			state.OV = new OpenVidu();
-			state.session = state.OV.initSession();
+		state.OV = new OpenVidu();
+		state.session = state.OV.initSession();
 
-      state.session.on('streamCreated', ({ stream }) => {
+		console.log(state.session);
+		console.log(state.session.value);
+
+		state.session.on('streamCreated', ({ stream }) => {
 				const subscriber = state.session.subscribe(stream);
 				state.subscribers.push(subscriber);
 			});
 
-      state.session.on('streamDestroyed', ({ stream }) => {
+		state.session.on('streamDestroyed', ({ stream }) => {
 				const index = state.subscribers.indexOf(stream.streamManager, 0);
 				if (index >= 0) {
 					state.subscribers.splice(index, 1);
 				}
 			});
 
-      state.session.on('exception', ({ exception }) => {
+		state.session.on('exception', ({ exception }) => {
 				console.error(exception);
 			});
 
-      getToken(state.mySessionId).then(token => {
+		getToken(state.mySessionId).then(token => {
 				console.log(token);
 				state.session.connect(token, { clientData: state.myUserName })
 					.then(() => {
@@ -148,6 +149,8 @@ export default {
 			window.removeEventListener('beforeunload', leaveSession);
 		};
 
+	
+
     // serverSide
     const getToken = async (mySessionId) => {
       const id = await createSession(mySessionId);
@@ -195,7 +198,9 @@ export default {
 					.catch(error => reject(error.response));
 			});
 		}; 
-
+	onUpdated(() => {
+		console.log("update!");
+	});
 
     return {
       joinSession,
