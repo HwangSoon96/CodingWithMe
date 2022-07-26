@@ -1,0 +1,22 @@
+{
+  "name": "clean",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-react-app": "^10.0.1",
+    "body-parser": "^1.20.0",
+    "child_process": "^1.0.2",
+    "express": "^4.18.1",
+    "golden-layout": "^2.5.0",
+    "install": "^0.13.0",
+    "monaco-editor": "^0.33.0",
+    "util": "^0.12.4"
+  }
+}
