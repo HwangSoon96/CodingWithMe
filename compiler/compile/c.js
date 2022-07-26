@@ -20,12 +20,12 @@ exports.check = async (code,inputData,answerData) => {
   try {
     await exec("gcc main.c");
     let pre_time = Date.now();
-    let run = await exec(`./main.out < ./input.in`);
+    let run = await exec(`./a.out < ./input.in`);
     let cur_time = Date.now();
 
     try { // 사용한 파일 제거
       await fs.unlink('main.c');
-      await fs.unlink('main.out');
+      await fs.unlink('a.out');
       await fs.unlink('input.in');
     } catch (error) { console.log(error); }
 
@@ -39,7 +39,7 @@ exports.check = async (code,inputData,answerData) => {
     console.log(error);
     try {
       await fs.unlink('main.c');
-      await fs.unlink('main.out');
+      await fs.unlink('a.out');
       await fs.unlink('input.in');
     } catch (error) {
       console.log(error);
