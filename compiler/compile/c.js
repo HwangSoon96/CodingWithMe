@@ -5,16 +5,10 @@ const fs = require('fs').promises;
 // do it(error check);
 exports.check = async (code,inputData,answerData) => {
   let sourceFile;
-  let inputFile;
-  let answerFile;
   try {
     sourceFile = await fs.writeFile('main.c',code);
     await fs.writeFile('./input.in', inputData);
-    await fs.writeFile('./output.out', answerData);
-
-    inputFile = await fs.readFile('./input.in','utf-8');
-    answerFile = await fs.readFile('./output.out','utf-8');
-  } catch (error) {
+  } catch (error) { // 파일 쓰기 실패
     console.log(error);
     return {
       time : 0,
@@ -26,27 +20,27 @@ exports.check = async (code,inputData,answerData) => {
   try {
     await exec("gcc main.c");
     let pre_time = Date.now();
-    let run = await exec(`./main.out < ${inputFile}`);
+    let run = await exec(`./main.out < ./input.in`);
     let cur_time = Date.now();
 
-    try {
+    try { // 사용한 파일 제거
       await fs.unlink('main.c');
       await fs.unlink('main.out');
+      await fs.unlink('input.in');
     } catch (error) { console.log(error); }
 
     return {
       time : cur_time - pre_time,
       output : run.stdout,
-      success : (run.stdout.trim() == answerFile)
+      success : (run.stdout.trim() == answerData)
     };
 
-  } catch (error) {
+  } catch (error) { // 컴파일, 런타임 오류
     console.log(error);
     try {
       await fs.unlink('main.c');
       await fs.unlink('main.out');
-      await fs.unlink('input.out');
-      await fs.unlink('output.out');
+      await fs.unlink('input.in');
     } catch (error) {
       console.log(error);
      }
