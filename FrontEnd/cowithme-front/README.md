@@ -2,6 +2,25 @@
 
 CowithMe
 
+## .vscode 설정 (settings.json) 아래 내용을 포함해 주시기 바랍니다.
+```
+{
+  "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+      "html",
+      "vue",
+      "markdown"
+  ],
+  "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+  },
+  "editor.tabSize": 2,
+}
+```
+
 ## Install the dependencies
 ```bash
 yarn
