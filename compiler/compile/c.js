@@ -3,22 +3,49 @@ const exec = util.promisify(require('child_process').exec);
 const fs = require('fs').promises;
 
 // do it(error check);
-exports.check = async (code,inFile,outFile) => {
-  var readFile = await fs.readFile(outFile,'utf-8');
-  var writefile = await fs.writeFile('a.c',code);
-  // var compile = await exec("gcc a.c -o a.exe");
-  var compile = await exec("gcc a.c");
+exports.check = async (code,inFile,resultFile) => {
+  let answer;
+  let sourceFile;
+  try {
+    answer = await fs.readFile(resultFile,'utf-8');
+    sourceFile = await fs.writeFile('a.c',code);
+  } catch (error) {
+    return {
+      time : 0,
+      output : error.stderr,
+      success : false
+    };
+  }
 
-  var pre_time = Date.now();
-  var run = await exec(`./a.out < ${inFile}`);
-  var cur_time = Date.now();
-  
-  
-  await fs.unlink('a.c');
-  await fs.unlink('a.out');
-  return {
-    time : cur_time - pre_time,
-    output : run.stdout,
-    success : (run.stdout == readFile)
-  };
+  try {
+    await exec("gcc a.c");
+    let pre_time = Date.now();
+    let run = await exec(`./a.out < ${inFile}`);
+    let cur_time = Date.now();
+
+    try {
+      await fs.unlink('a.c');
+      await fs.unlink('a.out');
+    } catch (error) { }
+
+    return {
+      time : cur_time - pre_time,
+      output : run.stdout,
+      success : (run.stdout == answer)
+    };
+
+  } catch (error) {
+    
+    try {
+      await fs.unlink('a.c');
+      await fs.unlink('a.out');
+    } catch (error) { }
+
+    return {
+      time : 0,
+      output : error.stderr,
+      success : false
+    };
+
+  }
 }
