@@ -1,13 +1,12 @@
 <template>
     <div v-if="streamManager">
-        <video ref="videoStream" autoplay/>
         <div><p>{{ clientData }}</p></div>
+        <div><video ref="videoStream" autoplay/></div>
     </div>
 </template>
 
 <script>
 
-import { OpenVidu } from 'openvidu-browser';
 import { reactive, ref, computed, onMounted, onUpdated } from 'vue';
 
 export default {

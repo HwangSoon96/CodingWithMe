@@ -22,19 +22,18 @@
 				<h1 id="session-title">{{ state.mySessionId }}</h1>
 				<input class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="leaveSession" value="Leave session">
 			</div>
-			<div id="main-video" class="col-md-6">
-			<!-- <div v-if="state.mainStreamManager"> {{ state.mainStreamManager }} </div> -->
+			<div id="session-header-screenShare">
+				<input v-if ="!state.screenOV" class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="startScreenShare" value="Start Screen Share">
+				<input v-if ="state.screenOV" class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="stopScreenShare" value="End Screen Share">
 			</div>
 
-		<div v-if="state.mainStreamManager">
-			teststesfsefsefsefse
-		<user-video v-if="state.mainStreamManager" :stream-manager="state.mainStreamManager"/>
-		</div>
-		
-		<div id="video-container" class="col-md-6">
-			<div v-for="sub in state.subscribers" :key="sub.stream.connection.connectionId" >
-				{{ sub }}
+			<div id="main-video" class="col-md-6">
+				<user-video v-if="state.mainStreamManager" :stream-manager="state.mainStreamManager"/>
 			</div>
+		
+		<div id="video-container" class="col-md-3">
+			<user-video v-if="state.publisher" :stream-manager="state.publisher" @click="updateMainVideoStreamManager(state.publisher)"/>
+			<user-video v-for="sub in state.subscribers" :key="sub.stream.connection.connectionId" :stream-manager="sub" @click="updateMainVideoStreamManager(sub)"/>
 		</div>
 	</div>
     
@@ -58,6 +57,7 @@ export default {
   components: {
       UserVideo,
   },
+
   setup() {
     const state = reactive({
 			OV: undefined,
@@ -137,18 +137,21 @@ export default {
     const leaveSession = () => {
 			// --- Leave the session by calling 'disconnect' method over the Session object ---
 			if (state.session) state.session.disconnect();
-			// if (state.screenSession) state.screenSession.disconnect();
-			state.session = undefined;
-			state.screenSession = undefined;
-			state.mainStreamManager = undefined;
-			state.publisher = undefined;
+			if (state.screenSession) state.screenSession.disconnect();
+			state.session = ref(undefined);
+			state.screenSession = ref(undefined);
+			state.mainStreamManager = ref(undefined);
+			state.publisher = ref(undefined);
 			state.subscribers = [];
-			state.OV = undefined;
-			state.screenOV = undefined;
+			state.OV = ref(undefined);
+			state.screenOV = ref(undefined);
 
 			window.removeEventListener('beforeunload', leaveSession);
 		};
 
+	onUpdated(() => {
+		console.log(state.subscribers);
+	});
 	
 
     // serverSide
@@ -198,19 +201,68 @@ export default {
 					.catch(error => reject(error.response));
 			});
 		}; 
-	onUpdated(() => {
-		console.log("update!");
-	});
+	
+	const startScreenShare = () => {
+		state.screenOV = new OpenVidu();
+		state.screenSession = state.screenOV.initSession();
 
-    return {
-      joinSession,
-      leaveSession,
-      state,
+		getToken(state.mySessionId).then(token =>{
+			state.screenSession.connect(token, { clientData: state.screenShareName }).then(()=>{
+					let publisher = state.screenOV.initPublisher("html-element-id", { videoSource: "screen", publishAudio: false  });
 
-      getToken,
-      createSession,
-      createToken
+					try {
+						publisher.once('accessAllowed', () => {
+						let test = publisher.stream.getMediaStream().getVideoTracks();
+						console.log(test);
+						publisher.stream.getMediaStream().getVideoTracks()[0].addEventListener('ended', () => {
+							console.log('User pressed the "Stop sharing" button');
+							stopScreenShare();
+						});
+							state.screenSession.publish(publisher);
+						});
+
+						publisher.once('accessDenied', (event) => {
+							console.error(event, 'ScreenShare: Access Denied');
+							stopScreenShare();
+						});
+					} catch (error) {
+						console.log(error);
+					}
+					
+			})
+		}).catch(error => {
+			console.error(error);
+			state.screenOV = ref(undefined);
+			state.screenSession = ref(undefined);
+		})
+	};
+
+	const stopScreenShare = () => {
+		state.screenSession.disconnect();
+		state.screenOV = ref(undefined);
+		state.screenSession = ref(undefined);
+	};
+
+	const updateMainVideoStreamManager = (stream) => {
+		if (state.mainStreamManager === stream)
+			return;
+		state.mainStreamManager = stream;
+	};
+
+	return {
+		joinSession,
+		leaveSession,
+		state,
+		startScreenShare,
+		stopScreenShare,
+		updateMainVideoStreamManager,
+
+		getToken,
+		createSession,
+		createToken
     }
   }
+
+  
 }
 </script>
