@@ -20,7 +20,7 @@ exports.check = async (code,inputData,answerData) => {
   try {
     await exec("javac -d . -encoding UTF-8 -g:none -Xlint:deprecation Main.java");
     let pre_time = Date.now();
-    let run = await exec(`java -cp . Main < ${inFile}`);
+    let run = await exec(`java -cp . Main < ./input.in`);
     let cur_time = Date.now();
 
     try { // 사용한 파일 제거
