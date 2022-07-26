@@ -48,16 +48,15 @@ public class User {
     @Column(nullable = false)
     String role;
 
-    @JsonIgnore
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     String password;
-
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Classes> classlist = new ArrayList<>();
-
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<AttendanceRecord> attendanceRecords = new ArrayList<>();
-
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<TestRecord> testRecords = new ArrayList<>();
 

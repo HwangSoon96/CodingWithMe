@@ -1,5 +1,6 @@
 package com.ssafy.db.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,6 +28,19 @@ public class Classes {
 
     @Column
     private String className;
+
+    @Column
+    private String classDescription;
+    @JsonIgnore
+    @OneToMany(mappedBy = "classes")
+    private List<Test> testList = new ArrayList<>();
+    @JsonIgnore
+    @OneToMany(mappedBy = "classes")
+    private List<Conference> conferences = new ArrayList<>();
+    @JsonIgnore
+    @OneToMany(mappedBy = "classes")
+    private List<UserClass> userClassList = new ArrayList<>();
+
     public void setUser(User user){
         this.user =user;
         //무한 루프 주의
@@ -34,17 +48,6 @@ public class Classes {
             user.getClasslist().add(this);
         }
     }
-
-    @Column
-    private String classDescription;
-
-    @OneToMany(mappedBy = "classes")
-    private List<Test> testList = new ArrayList<>();
-    @OneToMany(mappedBy = "classes")
-    private List<Conference> conferences = new ArrayList<>();
-    @OneToMany(mappedBy = "classes")
-    private List<UserClass> userClassList = new ArrayList<>();
-
     public void addTest(Test test){
         this.testList.add(test);
 
@@ -71,4 +74,5 @@ public class Classes {
         }
 
     }
+    
 }

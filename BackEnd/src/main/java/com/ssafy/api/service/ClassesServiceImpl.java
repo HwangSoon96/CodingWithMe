@@ -13,8 +13,13 @@ import com.ssafy.db.repository.UserClassRepository;
 import com.ssafy.db.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.List;
 
 @Service("classesService")
+@Transactional(readOnly = true)
 public class ClassesServiceImpl implements ClassesService {
 
     @Autowired
@@ -24,6 +29,7 @@ public class ClassesServiceImpl implements ClassesService {
     UserRepository userRepository;
 
     @Override
+    @Transactional
     public Classes createClass(ClassesRegisterPostReq classesRegisterInfo) {
         Classes classes =new Classes();
         classes.setClassName(classesRegisterInfo.getClassName());
@@ -34,9 +40,28 @@ public class ClassesServiceImpl implements ClassesService {
         return classesRepository.save(classes);
     }
 
+    @Override
+    @Transactional
+    public boolean deleteClass(ClassesRegisterPostReq classesRegisterInfo) {
+        boolean success = false;
+
+        try {
+            //User user = userRepository.findById(userRegisterInfo.getId()).get();
+            //Classes classes = classesRepository.findByUserUserIdAndClassName(classesModifyPostReq.getTutorId(), classesModifyPostReq.getClassName()).get();
+            Classes classes = classesRepository.findByUserUserIdAndClassName(classesRegisterInfo.getTutorId(), classesRegisterInfo.getClassName()).get();
+            classesRepository.delete(classes);
+            success = true;
+        }catch (Exception e){
+            success = false;
+        }
+
+        return success;
+    }
+
     @Autowired
     UserClassRepository userClassRepository;
     @Override
+    @Transactional
     public boolean addStudent(ClassesAddStudentPostReq classesAddStudentPostReq) {
         try{
             Classes classes = classesRepository.findByUserUserIdAndClassName(classesAddStudentPostReq.getTutorId(), classesAddStudentPostReq.getClassName()).get();
@@ -58,6 +83,7 @@ public class ClassesServiceImpl implements ClassesService {
 
 
     @Override
+    @Transactional
     public Classes modifyClass(ClassesModifyPostReq classesModifyPostReq) {
         Classes classes = classesRepository.findByUserUserIdAndClassName(classesModifyPostReq.getTutorId(), classesModifyPostReq.getClassName()).get();
 
@@ -67,5 +93,47 @@ public class ClassesServiceImpl implements ClassesService {
         return classesRepository.save(classes);
     }
 
+    @Override
+    @Transactional
+    public boolean deleteStudent(ClassesAddStudentPostReq classesAddStudentPostReq) {
+        boolean success = false;
+
+        try {
+            //User user = userRepository.findById(classesAddStudentPostReq.getStudentId()).get();
+            Classes classes = classesRepository.findByUserUserIdAndClassName(classesAddStudentPostReq.getTutorId(), classesAddStudentPostReq.getClassName()).get();
+            User student = userRepository.findByUserId(classesAddStudentPostReq.getStudentId()).get();
+
+            UserClass uc = userClassRepository.findByStudentId(student.getUserId()).get();
+            System.out.println(uc);
+//            userClassRepository.delete(uc);
+            System.out.println(classes.getUserClassList());
+            classes.getUserClassList().remove(uc);
+            success = true;
+        }catch (Exception e){
+            success = false;
+        }
+
+        return success;
+    }
+
+    @Override
+    @Transactional
+    public List<Classes> getAllClassesInfo(Long userid) {
+
+        User user = userRepository.findByUserId(userid).get();
+        List<Classes> classes = classesRepository.findByUserUserId(user.getUserId()).get();
+
+        return classes;
+    }
+
+    @Override
+    @Transactional
+    public List<UserClass> getClassesInfo(Long userid, String classname) {
+        Classes classes = classesRepository.findByUserUserIdAndClassName(userid,classname).get();
+
+        List<UserClass> uc =classes.getUserClassList();
+
+        return uc;
+    }
 
 }

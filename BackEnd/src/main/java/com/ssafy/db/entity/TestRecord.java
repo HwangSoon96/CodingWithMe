@@ -1,5 +1,6 @@
 package com.ssafy.db.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,16 +17,19 @@ public class TestRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long testRecordId;
-
+    @JsonIgnore
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
     User user;
-
+    @JsonIgnore
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "test_id")
     Test test;
 
+    @Column
     int correctCount;
+
+    @Column
     String sourceCode;
 
     public void setUser(User user){

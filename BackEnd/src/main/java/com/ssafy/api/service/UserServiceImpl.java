@@ -18,6 +18,7 @@ import com.ssafy.api.request.UserRegisterPostReq;
 import com.ssafy.db.entity.User;
 import com.ssafy.db.repository.UserRepository;
 import com.ssafy.db.repository.UserRepositorySupport;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.mail.internet.MimeMessage;
 import java.util.NoSuchElementException;
@@ -28,6 +29,7 @@ import java.util.Random;
  * 유저 관련 비즈니스 로직 처리를 위한 서비스 구현 정의.
  */
 @Service("userService")
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
     @Autowired
     UserRepository userRepository;
@@ -42,6 +44,7 @@ public class UserServiceImpl implements UserService {
     PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional
     public User createUser(UserRegisterPostReq userRegisterInfo) {
         User user = new User();
         user.setId(userRegisterInfo.getId());
@@ -78,6 +81,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User modifyUser(UserRegisterPostReq userRegisterInfo) {
         //User user =userRepository.findByUserId(1L).get();
         User user = userRepository.findById(userRegisterInfo.getId()).get();
@@ -92,13 +96,13 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
     @Override
+    @Transactional
     public boolean deleteUser(UserRegisterPostReq userRegisterInfo) {
         boolean success = false;
 
         try {
             User user = userRepository.findById(userRegisterInfo.getId()).get();
-            user.getClasslist();
-
+            userRepository.delete(user);
             success = true;
         }catch (Exception e){
             success = false;
@@ -168,7 +172,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean sendVerificationMail(UserIdEmailReq userIE) {
         String sendTo = userIE.getMail();
-        String verificationNum = getverificationNumber();
+        String verificationNum = getVerificationNumber();
         String mailTitle = "[Coding With Me] 인증 안내 메일 입니다.";
         String mailContent = "안녕하세요. Coding With Me 입니다.\n회원님의 이메일 인증 코드는 "
                 + verificationNum
@@ -244,7 +248,7 @@ public class UserServiceImpl implements UserService {
         return str;
     }
 
-    public String getverificationNumber() {
+    public String getVerificationNumber() {
         // 난수의 범위 111111 ~ 999999 (6자리 난수)
         Random r = new Random();
         int num = r.nextInt(888888) + 111111;
