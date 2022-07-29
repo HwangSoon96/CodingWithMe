@@ -1,17 +1,19 @@
 <template>
 <div>
-	<router-link to="/">main</router-link>
-    <br>
-    <router-link to="/layout">info</router-link>
+	<main-header />
 	<router-view />
 </div>
 
 </template>
 
 <script>
-import { defineComponent } from 'vue';
+import MainHeader from './layouts/MainHeader.vue';
 
-export default defineComponent({
+export default {
 	name: 'App',
-});
+
+	components : {
+		MainHeader
+	}
+};
 </script>

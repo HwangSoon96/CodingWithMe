@@ -2,15 +2,17 @@
 const routes = [
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
-    children: [
-      { path: '', component: () => import('../App.vue') }
-    ]
+    redirect : 'main',
   },
 
   {
-		path: '/layout',
-		component: () => import('layouts/GoldenLayout.vue')
+		path: '/webRTC',
+    component: () => import('../layouts/MainLayout.vue'),
+	},
+
+  {
+		path: '/goldenLayout',
+		component: () => import('../layouts/GoldenLayout.vue')
 	},
 
   // Always leave this as last one,
