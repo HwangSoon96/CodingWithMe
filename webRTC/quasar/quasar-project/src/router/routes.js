@@ -12,7 +12,7 @@ const routes = [
 
   {
 		path: '/goldenLayout',
-		component: () => import('../layouts/GoldenLayout.vue')
+		component: () => import('../layouts/GoldenLayoutDepre.vue')
 	},
 
   // Always leave this as last one,
