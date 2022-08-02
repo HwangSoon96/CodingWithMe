@@ -52,22 +52,10 @@ export default {
 
         onMounted(() => {
             goldenLayout = new GoldenLayout(test);
-            console.log(shallowRef(TestCom).value.render);
-
-            // goldenLayout.registerComponent('WebEditor', c);
-            goldenLayout.registerComponent('WebEditor',c);
+            
+            goldenLayout.registerComponent('WebEditor', c);
             goldenLayout.registerComponent('TestCom', d);
-            // goldenLayout.registerComponent('WebEditor', c);
-            // goldenLayout.registerComponent('template', function(container, state){
-            //     const uniqueID = `${Math.ceil(Math.random() * Date.now())}`;
-            //     const html = `<div id="${uniqueID}"><h2>ffafd</h2></div>`;
-            //     container.element.innerHtml = html;          
-            //     setTimeout(() => {  
-            //         WebEditor.el =  `#${uniqueID}`; 
-            //         WebEditor.render = h => h(state.vueTemplate);
-            //         createApp(WebEditor); 
-            //     });
-            // });
+
             goldenLayout.init();
             goldenLayout.loadLayout(config);
             
