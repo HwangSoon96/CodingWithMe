@@ -1,236 +1,108 @@
 <template>
     <div>
         <link type="text/css" rel="stylesheet" href="//golden-layout.com/assets/css/goldenlayout-base.css" />
-        <link type="text/css" rel="stylesheet" href="//golden-layout.com/assets/css/goldenlayout-dark-theme.css" />
+        <link type="text/css" rel="stylesheet" href="//golden-layout.com/assets/css/goldenlayout-light-theme.css" />
 
         <div ref ="test"></div>
     </div>
 </template>
 
 <script>
-
-import { ref, onMounted, onUnmounted, getCurrentInstance } from "vue";
+import { createApp, ref, onMounted, onUnmounted, getCurrentInstance, markRaw, defineAsyncComponent, compile, h } from "vue";
 import { GoldenLayout } from "golden-layout/src/index";
-import * as monaco from 'monaco-editor';
-class MyComponent {
-    constructor(container, state){
-        console.log("test : ", state);
-    this.rootElement = container.element; 
-    this.rootElement.innerHTML = '<h2>' + 'Component Type: MyComponent' + '</h2>';
-    this.resizeWithContainerAutomatically = true;
-  }
-}
-
+import WebEditor from "components/WebEditor.vue";
+import TestCom from "components/TestCom.vue"
 export default {
     name: 'App',
 
     components: {
-        },
+    },
 
     setup(props) {
-        const test = ref(undefined);
-        const myEditor = ref(undefined);
-        const teacherEditor = ref(undefined);
-        let goldenLayout;
-        let myIde;
-        let teacherIde;
-        let code = "import java.util.*;\nimport java.io.*;\n\npublic class Main{\n    public static void main(String[] args) throws IOException {\n        BufferedReader re = new BufferedReader(new InputStreamReader(System.in));\n       \n        int a = Integer.parseInt(re.readLine());\n\n        System.out.println(a+b);\n        re.close();\n    }\n}";
-        let teacherCode = "import java.util.*;\nimport java.io.*;\n\npublic class Main{\n    public static void main(String[] args) throws IOException {\n        BufferedReader re = new BufferedReader(new InputStreamReader(System.in));\n       \n        int a = Integer.parseInt(re.readLine());\n        int b = Integer.parseInt(re.readLine());\n\n        System.out.println(a+b);\n        re.close();\n    }\n}"
-        
-        const config = {
-            root: {
-                type: 'row',
-                content: [
-                    {
-                        type: 'column',
-                        content : [
-                            {
-                                title: 'others',
-                                type: 'component',
-                                componentType: 'others',
-                                width: 60,
-                                height: 10,
-                                componentState: { text: 'others' }
-                            },
-                            {
-                                title: 'my video',
-                                type: 'component',
-                                componentType: 'me',
-                                width: 60,
-                                componentState: { text: 'my video' }
-                            }
-                        ]
-                    },
-                    {
-                        title: 'Teacher Code',
-                        type: 'component',
-                        componentType: 'teacherEditor',
-                        width: 40,
-                    },
-                    {
-                        title: 'My Code',
-                        type: 'component',
-                        componentType: 'myEditor',
-                        width: 40,
-                    },
-                    {
-                        type : 'column',
-                        content : [
-                            {
-                                title: 'chat',
-                                type: 'component',
-                                componentType: 'chat',
-                                // componentState: { text: 'Component 2' }
-                            },
-                        ],
-                        width: 30
-                    }
-                ]
+        const VueApp = { 
+            data: {
+                title: 'Vue + Golden Layout',
+                somevalue: 'Hello Vue :-)'
+            },
+            methods:{
+                resetLayout(){ 
+                    localStorage.removeItem('savedState'); 
+                    window.location.reload(true);              
+                }
             }
-        };
-
+        }
+        let c = () => h(WebEditor, {
+            code : "import java.util.*;\nimport java.io.*;\n\npublic class Main{\n    public static void main(String[] args) throws IOException {\n        BufferedReader re = new BufferedReader(new InputStreamReader(System.in));\n       \n        int a = Integer.parseInt(re.readLine());\n        int b = Integer.parseInt(re.readLine());\n\n        System.out.println(a+b);\n        re.close();\n    }\n}",
+            language : "java",
+            readonly : false
+        });
+        let d = () => h(TestCom, {});
+        const test = ref(undefined);
+        let goldenLayout;
+        const config = {
+            content:
+            [
+                { 
+                    type: 'row',
+                    content:
+                    [
+                        {
+                            type: 'component',
+                            componentName: 'WebEditor',
+                            componentType : 'WebEditor'
+                        },
+                        {
+                            type: 'component',
+                            componentName: 'TestCom',
+                            componentType : 'TestCom'
+                            
+                        }      
+                    ]          
+                }
+            ]
+        } 
 
         onMounted(() => {
+            console.log(c());
             goldenLayout = new GoldenLayout(test);
-
-            // goldenLayout.registerComponent('MyComponent', MyComponent);
-            goldenLayout.registerComponent('MyComponent', function(container, state){
-                console.log(state.text);
-                this.rootElement = container.element;
-                if(state.text)
-                    this.rootElement.innerHTML = '<h2>' + state.text + '</h2>';
-                else
-                    this.rootElement.innerHTML = '<h2>' + 'Component Type: MyComponent' + '</h2>';
-                this.resizeWithContainerAutomatically = true;
-            });
-
-            goldenLayout.registerComponent('chat', function(container){
-                this.rootElement = container.element;
-                this.rootElement.innerHTML = '<img src="src/assets/chat.png" alt="">';
-                this.resizeWithContainerAutomatically = true;
-            });
-            goldenLayout.registerComponent('me', function(container){
-                this.rootElement = container.element;
-                this.rootElement.innerHTML = '<img src="src/assets/me.png" alt="" style="width:100% height:100%">';
-                this.resizeWithContainerAutomatically = true;
-            });
-
-            goldenLayout.registerComponent('others', function(container){
-                this.rootElement = container.element;
-                this.rootElement.innerHTML = '<img src="src/assets/others.png" alt="">';
-                this.resizeWithContainerAutomatically = true;
-            });
-
-            goldenLayout.registerComponent('MyComponentA', function(container){
-                this.rootElement = container.element;
-                this.rootElement.innerHTML = '<h2>' + 'CTest' + '</h2>';
-                this.resizeWithContainerAutomatically = true;
-            });
-
-            goldenLayout.registerComponent( 'myEditor',function(container,state){
-                this.rootElement = container.element;
-                this.rootElement.innerHTML = '<div id="myEditor" style="height: 100%; width:100%;"></div>';
-                this.resizeWithContainerAutomatically = true;
-            });
-
-            goldenLayout.registerComponent( 'teacherEditor',function(container,state){
-                this.rootElement = container.element;
-                this.rootElement.innerHTML = '<div id="teacherEditor" style="height: 100%; width:100%;"></div>';
-                this.resizeWithContainerAutomatically = true;
-            });
-            
-
-            
+            goldenLayout.registerComponent('WebEditor', c);
+            goldenLayout.registerComponent('TestCom', d);
+            // goldenLayout.registerComponent('template', function(container, state){
+            //     const uniqueID = `${Math.ceil(Math.random() * Date.now())}`;
+            //     const html = `<div id="${uniqueID}"><h2>ffafd</h2></div>`;
+            //     container.element.innerHtml = html;          
+            //     setTimeout(() => {  
+            //         WebEditor.el =  `#${uniqueID}`; 
+            //         WebEditor.render = h => h(state.vueTemplate);
+            //         createApp(WebEditor); 
+            //     });
+            // });
             goldenLayout.init();
             goldenLayout.loadLayout(config);
 
+            const glc = markRaw(defineAsyncComponent(() => import("../components/WebEditor.vue")));
 
-            // console.log(editor);
-            // console.log(getCurrentInstance().refs.editor);
 
-            // ay = monaco.editor.create(document.getElementById('editor'),{
-            //     value: 'import java.util.*;\nimport java.io.*;\n\npublic class Main{\n    public static void main(String[] args) throws IOException {\n        BufferedReader re = new BufferedReader(new InputStreamReader(System.in));\n       \n        int a = Integer.parseInt(re.readLine());\n        int b = Integer.parseInt(re.readLine());\n\n        System.out.println(a+b);\n        re.close();\n    }\n}',
-            //     // abap,aes,apex,azcli,bat,c,cameligo,clojure,coffeescript,cpp,csharp,csp,css,
-            //     // dart,dockerfile,fsharp,go,graphql,handlebars,hcl,html,ini,java,javascript,
-            //     // json,julia,kotlin,less,lexon,lua,markdown,mips,msdax,mysql,objective-c,pascal,
-            //     // pascaligo,perl,pgsql,php,plaintext,postiats,powerquery,powershell,pug,python,
-            //     // r,razor,redis,redshift,restructuredtext,ruby,rust,sb,scala,scheme,scss,shell,
-            //     // sol,sql,st,swift,systemverilog,tcl,twig,typescript,vb,verilog,xml,yaml
-            //     language: 'java',
-            //     // theme: 'vs', //light version
-            //     theme: 'vs-dark',
-            //     tabSize: 2,
-            //     fontFamily: "Consolas",
-            //     // fontFamily: 'D2Coding',
-            //     // fontFamily: 'IBM Plex Mono',
-            //     fontSize: 12,
+            // goldenLayout.registerComponent('MyComponent', MyComponent);
+
+            // goldenLayout.registerComponent('chat', function(container){
+            //     this.rootElement = container.element;
+            //     this.rootElement.innerHTML = '<img src="src/assets/chat.png" alt="">';
+            //     this.resizeWithContainerAutomatically = true;
             // });
 
             
-            goldenLayout.on('stateChanged',function(some){
+
+            // goldenLayout.registerComponent('others', function(container){
+            //     this.rootElement = container.element;
+            //     this.rootElement.innerHTML = '<img src="src/assets/others.png" alt="">';
+            //     this.resizeWithContainerAutomatically = true;
+            // });
+            
+            // goldenLayout.on('stateChanged',function(some){
                 
-                console.log(document.getElementById('myEditor'));
-                console.log(myEditor);
-                console.log(myEditor.value);
-                // var editorValue = ay.getValue();
-                // console.log(ay.getModel().getValue());
-                if(myIde){
-                    code = myIde.getValue();
-                    myIde.dispose();
-                }
-                myIde = monaco.editor.create(document.getElementById('myEditor'),{
-                    // model: null,
-                    readOnly: false,
-                    value: code,
-                    // abap,aes,apex,azcli,bat,c,cameligo,clojure,coffeescript,cpp,csharp,csp,css,
-                    // dart,dockerfile,fsharp,go,graphql,handlebars,hcl,html,ini,java,javascript,
-                    // json,julia,kotlin,less,lexon,lua,markdown,mips,msdax,mysql,objective-c,pascal,
-                    // pascaligo,perl,pgsql,php,plaintext,postiats,powerquery,powershell,pug,python,
-                    // r,razor,redis,redshift,restructuredtext,ruby,rust,sb,scala,scheme,scss,shell,
-                    // sol,sql,st,swift,systemverilog,tcl,twig,typescript,vb,verilog,xml,yaml
-                    language: 'java',
-                    // theme: 'vs', //light version
-                    theme: 'vs-dark',
-                    tabSize: 2,
-                    fontFamily: "Consolas",
-                    // fontFamily: 'D2Coding',
-                    // fontFamily: 'IBM Plex Mono',
-                    fontSize: 12,
-                });
-
-                if(teacherIde){
-                    teacherCode = teacherIde.getValue();
-                    teacherIde.dispose();
-                }
-
-                teacherIde = monaco.editor.create(document.getElementById('teacherEditor'),{
-                    // model: null,
-                    readOnly: true,
-                    value: teacherCode,
-                    // abap,aes,apex,azcli,bat,c,cameligo,clojure,coffeescript,cpp,csharp,csp,css,
-                    // dart,dockerfile,fsharp,go,graphql,handlebars,hcl,html,ini,java,javascript,
-                    // json,julia,kotlin,less,lexon,lua,markdown,mips,msdax,mysql,objective-c,pascal,
-                    // pascaligo,perl,pgsql,php,plaintext,postiats,powerquery,powershell,pug,python,
-                    // r,razor,redis,redshift,restructuredtext,ruby,rust,sb,scala,scheme,scss,shell,
-                    // sol,sql,st,swift,systemverilog,tcl,twig,typescript,vb,verilog,xml,yaml
-                    language: 'java',
-                    // theme: 'vs', //light version
-                    theme: 'vs-dark',
-                    tabSize: 2,
-                    fontFamily: "Consolas",
-                    // fontFamily: 'D2Coding',
-                    // fontFamily: 'IBM Plex Mono',
-                    fontSize: 12,
-                });
-            });
-            
-            // myLayout = new GoldenLayout( config, test );
-            // myLayout.registerComponent( 'testComponent', function( container, componentState ){
-            //     console.log(container);
-            //     container.element.innerHTML = '<h2>' + componentState.label + '</h2>';
             // });
-
-            // myLayout.init();
+            
             
         });
 
@@ -239,10 +111,7 @@ export default {
         });
 
         return {
-            test,
-            myEditor,
-            myIde,
-            teacherEditor
+            test
         };
     }
 };

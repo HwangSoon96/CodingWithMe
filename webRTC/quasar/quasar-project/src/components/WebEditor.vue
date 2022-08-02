@@ -1,7 +1,7 @@
 <template>
     <div>
         <div ref="editorDiv" style="height: 100%; width:100%"></div>
-        <div><h2 @click="updateEditor">dfsfsfse</h2></div>
+        <div><h2 @click="updateEditor">refresh</h2></div>
     </div>
 </template>
 
@@ -18,6 +18,7 @@
 //     plugins: [new MonacoWebpackPlugin()],
 
 import { ref, onMounted } from "vue";
+
 import * as monaco from 'monaco-editor';
 export default {
     // example
