@@ -1,8 +1,5 @@
 <template>
-    <div>
-        <div ref="editorDiv" style="height: 100%; width:100%"></div>
-        <div><h2 @click="updateEditor">refresh</h2></div>
-    </div>
+    <div ref="editorDiv" style="height: 100%; width:100%"></div>
 </template>
 
 <script>
