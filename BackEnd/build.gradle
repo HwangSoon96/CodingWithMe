@@ -1,3 +1,4 @@
+
 import org.apache.tools.ant.filters.ReplaceTokens
 
 buildscript{
@@ -38,7 +39,6 @@ apply plugin: 'eclipse'
 //이클립스인 경우를 위한 QueryDSL 플러그인. IntelliJ는 불필요.
 //apply plugin: 'com.ewerk.gradle.plugins.querydsl'
 
-
 repositories {
     mavenCentral()
     maven { url 'https://repo.spring.io/snapshot' }
@@ -63,9 +63,9 @@ configurations {
     providedRuntime
 }
 
-/*task npmInstall(type: NpmTask, overwrite: true) {
+/task npmInstall(type: NpmTask, overwrite: true) {
     args = ['install']
-}*/
+}/
 
 //task webpack(type: NpmTask, dependsOn: 'npmInstall') {
 //    args = ['run','build']
@@ -86,9 +86,9 @@ project.ext.set("build.date", buildTime())
 processResources {
     with copySpec {
         from "src/main/resources"
-        include "**/application*.yml"
-        include "**/application*.yaml"
-        include "**/application*.properties"
+        include "/application*.yml"
+        include "/application.yaml"
+        include "**/application.properties"
         project.properties.findAll().each {
             prop ->
                 if (prop.value != null) {
@@ -145,6 +145,12 @@ dependencies {
     implementation("com.querydsl:querydsl-jpa:${querydslVer}")
     implementation("com.querydsl:querydsl-apt:${querydslVer}")
     implementation ("org.springframework.boot:spring-boot-starter-mail")
+
+// https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload
+    implementation 'commons-fileupload:commons-fileupload:1.4'
+// https://mvnrepository.com/artifact/commons-io/commons-io
+    implementation 'commons-io:commons-io:2.11.0'
+
 /*
     //STOMP 웹소캣 서버 사이드 테스트를 위한 의존성 추가
     implementation("org.springframework.boot:spring-boot-starter-mustache")
@@ -174,13 +180,16 @@ dependencies {
     testImplementation("com.jayway.jsonpath:json-path:2.4.0")
 
     implementation("com.auth0:java-jwt:3.10.3")
-    
+
     implementation("io.springfox:springfox-swagger2:3.0.0")
     implementation("io.springfox:springfox-swagger-ui:3.0.0")
     implementation("io.springfox:springfox-data-rest:3.0.0")
     implementation("io.springfox:springfox-bean-validators:3.0.0")
     implementation("io.springfox:springfox-boot-starter:3.0.0")
 
+    implementation ("com.google.code.gson:gson:2.9.0")
+    implementation ("org.apache.httpcomponents:httpcore:4.4.15")
+    implementation ("org.apache.httpcomponents:httpclient:4.5.1")
     compile("javax.annotation:javax.annotation-api:1.2")
 
     implementation("org.projectlombok:lombok:1.18.20")

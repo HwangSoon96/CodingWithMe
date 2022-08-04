@@ -1,11 +1,15 @@
 package com.ssafy.db.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.ssafy.api.request.SourceCode;
+import com.ssafy.api.service.SourceCodeJsonConverter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+
+import java.util.Date;
 
 import static javax.persistence.FetchType.LAZY;
 
@@ -29,8 +33,15 @@ public class TestRecord {
     @Column
     int correctCount;
 
+    @Column(length = 1000)
+    @Convert( converter = SourceCodeJsonConverter.class)
+    SourceCode sourceCode;
+
     @Column
-    String sourceCode;
+    String lang;
+
+    @Temporal(TemporalType.DATE)
+    Date date;
 
     public void setUser(User user){
         this.user =user;

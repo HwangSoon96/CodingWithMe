@@ -28,29 +28,32 @@ public class JwtTokenUtil {
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String HEADER_STRING = "Authorization";
     public static final String ISSUER = "ssafy.com";
-    
-    @Autowired
-	public JwtTokenUtil(@Value("${jwt.secret}") String secretKey, @Value("${jwt.expiration}") Integer expirationTime) {
-		this.secretKey = secretKey;
-		this.expirationTime = expirationTime;
-	}
-    
-	public void setExpirationTime() {
-    		//JwtTokenUtil.expirationTime = Integer.parseInt(expirationTime);
-    		JwtTokenUtil.expirationTime = expirationTime;
-	}
 
-	public static JWTVerifier getVerifier() {
+    @Autowired
+    public JwtTokenUtil(@Value("${jwt.secret}") String secretKey, @Value("${jwt.expiration}") Integer expirationTime) {
+        this.secretKey = secretKey;
+        this.expirationTime = expirationTime;
+    }
+
+    public void setExpirationTime() {
+        //JwtTokenUtil.expirationTime = Integer.parseInt(expirationTime);
+        JwtTokenUtil.expirationTime = expirationTime;
+    }
+
+    public static JWTVerifier getVerifier() {
         return JWT
                 .require(Algorithm.HMAC512(secretKey.getBytes()))
                 .withIssuer(ISSUER)
                 .build();
     }
-    
-    public static String getToken(String userId) {
-    		Date expires = JwtTokenUtil.getTokenExpiration(expirationTime);
+
+    public static String getToken(Long userId, String Id, String role) {
+        Date expires = JwtTokenUtil.getTokenExpiration(expirationTime);
         return JWT.create()
-                .withSubject(userId)
+                .withSubject("사용자 정보")
+                .withClaim("uid", userId)
+                .withClaim("id", Id)
+                .withClaim("role", role)
                 .withExpiresAt(expires)
                 .withIssuer(ISSUER)
                 .withIssuedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()))
@@ -65,10 +68,10 @@ public class JwtTokenUtil {
                 .withIssuedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()))
                 .sign(Algorithm.HMAC512(secretKey.getBytes()));
     }
-    
+
     public static Date getTokenExpiration(int expirationTime) {
-    		Date now = new Date();
-    		return new Date(now.getTime() + expirationTime);
+        Date now = new Date();
+        return new Date(now.getTime() + expirationTime);
     }
 
     public static void handleError(String token) {

@@ -2,7 +2,11 @@ package com.ssafy.api.service;
 
 import com.ssafy.api.request.UserEmailCodeReq;
 import com.ssafy.api.request.UserIdEmailReq;
+import com.ssafy.api.response.UserClassRes;
+import com.ssafy.db.entity.Classes;
+import com.ssafy.db.entity.UserClass;
 import com.ssafy.db.entity.Verification;
+import com.ssafy.db.repository.UserClassRepository;
 import com.ssafy.db.repository.VerificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +25,7 @@ import com.ssafy.db.repository.UserRepositorySupport;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.mail.internet.MimeMessage;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Random;
@@ -39,6 +44,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     UserRepositorySupport userRepositorySupport;
+
+    @Autowired
+    UserClassRepository userClassRepository;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -75,15 +83,40 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> getUserByName(String name) {
+        List<User> userList = userRepositorySupport.findUserByName(name).get();
+        return userList;
+    }
+
+    @Override
     public User getUserByNameAndPhone(String name, String phone) {
         User user = userRepository.findByNameAndPhone(name, phone).get();
         return user;
     }
 
     @Override
+    public UserClassRes getClassInfoByUserId(Long userId) throws NoSuchElementException{
+        UserClassRes userClassRes = new UserClassRes();
+        User user = userRepository.findByUserId(userId).get();
+        UserClass uc = userClassRepository.findByStudentId(userId).get();
+        Classes classes = uc.getClasses();
+        User tutor = classes.getUser();
+
+        userClassRes.setUserId(user.getUserId());
+        userClassRes.setId(user.getId());
+        userClassRes.setName(user.getName());
+        userClassRes.setClassId(classes.getClassId());
+        userClassRes.setClassName(classes.getClassName());
+        userClassRes.setTutorName(tutor.getName());
+        userClassRes.setTutorId(tutor.getId());
+
+        return userClassRes;
+    }
+
+    @Override
     @Transactional
     public User modifyUser(UserRegisterPostReq userRegisterInfo) {
-        //User user =userRepository.findByUserId(1L).get();
+
         User user = userRepository.findById(userRegisterInfo.getId()).get();
         // 보안을 위해서 유저 패스워드 암호화 하여 디비에 저장.
         user.setPassword(passwordEncoder.encode(userRegisterInfo.getPassword()));
@@ -110,8 +143,6 @@ public class UserServiceImpl implements UserService {
 
         return success;
     }
-    //강사가 특정 반의 학생 리스트를 조회할 때
-    // user.getClasslist().get(index).getUserClassList();
     @Override
     public boolean checkUserId(String id) {
         boolean result = userRepositorySupport.findByUserIdEquals(id);

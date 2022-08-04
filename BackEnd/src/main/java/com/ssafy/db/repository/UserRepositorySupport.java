@@ -4,6 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.ssafy.db.entity.QUser;
 import com.ssafy.db.entity.User;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,37 +22,37 @@ public class UserRepositorySupport {
     public Optional<User> findUserByUserId(Long userId) {
         User user = jpaQueryFactory.select(qUser).from(qUser)
                 .where(qUser.userId.eq(userId)).fetchOne();
-        if(user == null) return Optional.empty();
+        if (user == null) return Optional.empty();
         return Optional.ofNullable(user);
     }
 
     public Optional<User> findUserById(String id) {
         User user = jpaQueryFactory.select(qUser).from(qUser)
                 .where(qUser.id.eq(id)).fetchOne();
-        if(user == null) return Optional.empty();
+        if (user == null) return Optional.empty();
         return Optional.ofNullable(user);
     }
 
-//    public Optional<User> findUserByUserIdAndPhone(String id, String phone) {
-//        User user = jpaQueryFactory.select(qUser).from(qUser)
-//                .where(qUser.id.eq(id))
-//                .where(qUser.phone.eq(phone))
-//                .fetchOne();
-//        if(user == null) return Optional.empty();
-//        return Optional.ofNullable(user);
-//    }
+    public Optional<List<User>> findUserByName(String name) {
+        List<User> userList = jpaQueryFactory.select(qUser).from(qUser)
+                .where(qUser.name.startsWith(name))
+                .where(qUser.role.eq("학생")).
+                fetch();
+        if (userList == null) return Optional.empty();
+        return Optional.ofNullable(userList);
+    }
 
     public boolean findByUserIdEquals(String id) {
         User user = jpaQueryFactory.select(qUser).from(qUser)
                 .where(qUser.id.eq(id)).fetchOne();
-        if(user == null) return true;
+        if (user == null) return true;
         return false;
     }
 
     public boolean findByUserEmailEquals(String email) {
         User user = jpaQueryFactory.select(qUser).from(qUser)
                 .where(qUser.email.eq(email)).fetchOne();
-        if(user == null) return true;
+        if (user == null) return true;
         return false;
     }
 }
